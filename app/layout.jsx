@@ -1,5 +1,4 @@
 import NavBar from '@/components/NavBar';
-import { shantellSans } from './fonts';
 import "./globals.css";
 
 export const metadata = {
@@ -12,7 +11,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
     return (
-        <html lang="es" className={shantellSans.variable}>
+        <html lang="es" className="font-shantellSans">
             <body className='bg-orange-50 flex flex-col px-4 py-2 min-h-screen'>
                 <header>
                     <NavBar/>

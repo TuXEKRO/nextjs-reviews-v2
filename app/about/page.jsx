@@ -8,7 +8,7 @@ export default function AboutPage() {
     return (
         <>
             <Heading>About</Heading>
-            <p>It's a page for abour me.</p>
+            <p>It is a page for abour me.</p>
         </>
     )
 }
