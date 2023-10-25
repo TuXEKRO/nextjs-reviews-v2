@@ -1,27 +1,33 @@
 "use client";
 
 import { useIsClient } from "@/lib/hooks";
-import { searchReviews } from "@/lib/reviews";
 import { Combobox } from "@headlessui/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebounce } from "use-debounce";
 
 export default function SearchBox() {
-    const router = useRouter()                  // Enruta hacia otra pagina
-    const isClient = useIsClient();             // Devuelve si quien procesa es el cliente
-    const [query, setQuery] = useState("")      // Guarda el texto de la búsqueda
-    const [reviews, setReviews] = useState([])  // Guarda las reviews que coinciden
-    useEffect(() => {                           // Se ejecuta al cambiar 'query'
+    const router = useRouter()                          // Enruta hacia otra pagina
+    const isClient = useIsClient();                     // Devuelve si quien procesa es el cliente
+    const [query, setQuery] = useState("")              // Guarda el texto de la búsqueda
+    const [debouncedQuery] = useDebounce(query, 300)    // Es como un delay antes de actualizar la variable, para evitar que se actualice mientras el usuario esta escribiendo
+    const [reviews, setReviews] = useState([])          // Guarda las reviews que coinciden
+    useEffect(() => {                                   // Se ejecuta al cambiar 'query'
         // fetch reviews
-        if (query.length > 1) {
+        if (debouncedQuery.length > 1) {
+            const controller = new AbortController();       // Cancela peticiones anteriores para no entremezclar los datos o devolver peticiones antiguas
+
             (async () => {                      // Crea una función asincrona y anonima que se ejecuta nada mas crearse por los () del final
-                const reviews = await searchReviews(query)
+                const url = "/api/search?query=" + encodeURIComponent(debouncedQuery)
+                const response = await fetch(url, { signal: controller.signal })
+                const reviews = await response.json()
                 setReviews(reviews)
             })()
+            return () => controller.abort()
         } else {
             setReviews([])
         }
-    }, [query])
+    }, [debouncedQuery])
     // console.log("[SearchBox] query: ", query);
     if (!isClient) { return null }              // Finaliza la ejecución del servidor
 
@@ -35,7 +41,7 @@ export default function SearchBox() {
         console.log("[handleChange] review: ", review);
         router.push(`/reviews/${review.slug}`)
     }
-    
+
     return (
         <div className="relative w-48">
             <Combobox onChange={handleChange}>

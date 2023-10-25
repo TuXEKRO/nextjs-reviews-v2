@@ -1,20 +1,25 @@
 /** @type {import('next').NextConfig} */
-/**
- * undefined: Por defecto para el modo produccion como Vercel.
- * 'standalone': Para autoalojamiento Docker.
- * 'export': En /out todos los ficheros estáticos.
- */
+
 module.exports = {
+    /**
+     * OPCIONES:
+     * undefined: Por defecto para el modo produccion como Vercel.
+     * 'standalone': Para autoalojamiento Docker.
+     * 'export': En /out todos los ficheros estáticos.
+     */
     output: undefined,
     images: {
         // unoptimized: true, // Para la exportación de imagenes a pagina estática
-        remotePatterns: [
-            {
-                protocol: "http",
-                hostname: "localhost",
-                port: "1337",
-                pathname: "/uploads/**",
-            }
-        ]
+        remotePatterns: [toRemotePattern(process.env.CMS_IMAGE_PATTERN)]
+    }
+}
+
+function toRemotePattern(urlString) {
+    const url = new URL(urlString)
+    return {
+        protocol: url.protocol.replace(":", ""),
+        hostname: url.hostname,
+        port: url.port,
+        pathname: url.pathname,
     }
 }
